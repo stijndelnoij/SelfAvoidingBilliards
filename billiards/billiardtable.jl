@@ -1,4 +1,4 @@
-export Billiard, randominside, randominside_xyφ
+export Billiard, randominside, randominside_xyφ, prev_obst
 #######################################################################################
 ## Billiard Table
 #######################################################################################
@@ -157,4 +157,17 @@ function _randominside(bd::Billiard{T}) where {T<:AbstractFloat}
     pos = SV{T}(x, y)
     vel = SV{T}(sincos(φ)...)
     return pos, vel, zero(SV{T}) # this zero is the `current_cell`
+end
+
+####################################################
+## Previous obstacle
+####################################################
+
+function prev_obst(o::Obstacle{T}, bd::Billiard{T}) where {T}
+    for o2 in bd
+        if o2.next == o.id
+            return o2.next
+        end
+    end
+    return 0
 end

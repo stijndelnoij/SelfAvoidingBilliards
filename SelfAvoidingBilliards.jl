@@ -33,36 +33,7 @@ include("timeevolution/collisions.jl")
 include("timeevolution/propagation.jl")
 include("timeevolution/timeseries.jl")
 include("timeevolution/highleveltimes.jl")
-
-
-
-###################
-# Update messages #
-###################
-using Scratch
-display_update = true
-version_number = "4"
-update_name = "update_v$(version_number)"
-
-function __init__()
-if display_update
-    # Get scratch space for this package
-    versions_dir = @get_scratch!("versions")
-    if !isfile(joinpath(versions_dir, update_name))
-        printstyled(
-            stdout,
-            """
-            \nUpdate message: DynamicalBilliards v$(version_number)
-            Plotting & animating has moved entirely to the Makie ecosystem.
-            It is now provided by InteractiveDynamics.jl.
-            See the documentation online for the new API.
-            """;
-            color = :light_magenta,
-        )
-        touch(joinpath(versions_dir, update_name))
-    end
-end
-end
+include("timeevolution/boundary_reduction.jl")
 
 
 end#module

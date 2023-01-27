@@ -1,6 +1,6 @@
 export Obstacle, Disk, Antidot, RandomDisk, Wall, Circular,
 InfiniteWall, PeriodicWall, RandomWall, FiniteWall,
-Semicircle, Ellipse, normalvec, prev_obst
+Semicircle, Ellipse, normalvec
 export translate
 
 using InteractiveUtils
@@ -84,8 +84,9 @@ mutable struct Antidot{T<:AbstractFloat} <: Circular{T}
     id::Integer
     next::Integer
 end
+
 function Antidot(c::AbstractVector{T}, r::Real,
-    pflag::Bool = true, id::Integer) where {T<:Real}
+    pflag::Bool, id::Integer) where {T<:Real}
     S = T <: Integer ? Float64 : T
     return Antidot{S}(SVector{2,S}(c), convert(S, abs(r)), pflag, id, id)
 end
@@ -201,7 +202,7 @@ struct FiniteWall{T<:AbstractFloat} <: Wall{T}
     next::Integer
 end
 function FiniteWall(sp::AbstractVector, ep::AbstractVector,
-    n::AbstractVector, isdoor::Bool = false, id::Integer, next::Integer)
+    n::AbstractVector, isdoor::Bool, id::Integer, next::Integer)
     T = eltype(sp)
     n = normalize(n)
     d = dot(n, ep-sp)
@@ -356,7 +357,7 @@ proper_ellipse_arclength(θ, a, b)  = b*Elliptic.E(atan(a*tan(θ)/b), 1.0 - (a/b
 
 export ellipse_arclength
 
-function Ellipse(c::AbstractVector{T}, a, b, pflag = true,
+function Ellipse(c::AbstractVector{T}, a, b, pflag,
                  id::Integer) where {T<:Real}
     S = T <: Integer ? Float64 : T
     return Ellipse{S}(SVector{2,S}(c),
@@ -549,17 +550,3 @@ for T in subtypes(Wall)
 end
 
 translate(e::Ellipse, vec) = Ellipse(e.c + vec, e.a, e.b, e.id, e.next)
-
-
-####################################################
-## Previous obstacle
-####################################################
-
-function prev_obst(o::Obstacle{T}, bd::Billiard) where {T}
-    for o2 in bd
-        if o2.next == o.id
-            return o2.next
-        end
-    end
-    return 0
-end

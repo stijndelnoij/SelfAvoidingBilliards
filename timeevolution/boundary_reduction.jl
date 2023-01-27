@@ -1,4 +1,4 @@
-export reduce_boundary, add_collision
+export reduce_boundary, add_collision, init_collisionlist
 
 function add_collision(wall_hit::Obstacle{T}, new_wall::Obstacle{T}, vel::SV{T}) where {T}
     ending = new_wall.ep
@@ -51,7 +51,7 @@ function search_next(searchparams::NamedTuple, collisions::DataFrame, bd::Billia
             new_col = collisions[collisions.incoming_id .== prev_obst(current_wall, bd), :]
             # Special case: outer wall hit
             if new_col.wall_hit_id[1] == 0
-                next_wall = prev_obst(current_wall)
+                next_wall = prev_obst(current_wall, bd)
                 new_collision_point = 1.0
                 travel_dir = false
                 next_side = true
@@ -59,7 +59,7 @@ function search_next(searchparams::NamedTuple, collisions::DataFrame, bd::Billia
             end
 
             # Special case: first wall moving backwards
-            if current_wall.id == current_wall.next
+            if prev_obst(current_wall, bd) == 0
                 next_wall = current_wall.id
                 new_collision_point = 0.0
                 travel_dir = true
@@ -133,4 +133,21 @@ function reduce_boundary!(bd_active::Billiard, collisions::DataFrame, current_se
         end
     end
     return Billiard(bd_new)
+end
+
+"""
+    init_collisionlist(bd::Billiard) → collisions
+Give a initial collisionlist dataframe for when the SAB has not started yet.
+
+Return collisions dataframe
+"""
+function init_collisionlist(bd::Billiard{T}) where {T}
+    collisions = DataFrame(wall_hit_id = Int64[], incoming_id = Int64[], collision_point = T[], moving_foward = Bool[], wall_hit_upside = Bool[], incoming_upside = Bool[])
+
+    for obst in bd
+        if obst isa Wall
+            push!(collisions, (0, obst.id, 0., true, true, false))
+        end
+    end
+    return collisions
 end
