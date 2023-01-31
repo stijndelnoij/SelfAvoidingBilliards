@@ -36,7 +36,7 @@ Ray-splitting version of `bounce!`.
     end
     if α != 0.0 && tmin != T(Inf)
         new_wall_id = last(bd).id + 1
-        new_wall = FiniteWall(p.pos, cp, normal, new_wall_id, new_wall_id + 1)
+        new_wall = Tail(p.pos, cp, normal, new_wall_id, new_wall_id + 1)
         relocate!(p, o, tmin, cp)
         resolvecollision!(p, o)
         col = add_collision(o, new_wall, vel)

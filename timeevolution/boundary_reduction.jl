@@ -1,4 +1,4 @@
-export reduce_boundary, add_collision, init_collisionlist
+export reduce_boundary!, add_collision, CollisionList
 
 function add_collision(wall_hit::Obstacle{T}, new_wall::Obstacle{T}, vel::SV{T}) where {T}
     ending = new_wall.ep
@@ -17,18 +17,13 @@ function search_next(searchparams::NamedTuple, collisions::DataFrame, bd::Billia
         selection = collisions[(collisions.wall_hit_id .== searchparams[:wall_hit]) .& (collisions.wall_hit_upside .== searchparams[:wall_hit_upside]).& (collisions.collision_point .< searchparams[:collision_point]), :]
     end
 
-    for obst in bd
-        if obst.id == searchparams[:wall_hit]
-            current_wall = obst
-            break
-        end
-    end
+    current_wall = first(filter(e -> e.id == searchparams[:wall_hit], bd.obstacles))
 
     if isempty(selection)
         if searchparams[:moving_foward]
             new_col = collisions[(collisions.incoming_id .== searchparams[:wall_hit]), :]
             # Special case: outer wall hit
-            if new_col.wall_hit_id[1] == 0
+            if !(current_wall isa Tail)
                 next_wall = current_wall.next
                 new_collision_point = 0.0
                 travel_dir = true
@@ -50,7 +45,7 @@ function search_next(searchparams::NamedTuple, collisions::DataFrame, bd::Billia
         else
             new_col = collisions[collisions.incoming_id .== prev_obst(current_wall, bd), :]
             # Special case: outer wall hit
-            if new_col.wall_hit_id[1] == 0
+            if !(current_wall isa Tail)
                 next_wall = prev_obst(current_wall, bd)
                 new_collision_point = 1.0
                 travel_dir = false
@@ -59,7 +54,7 @@ function search_next(searchparams::NamedTuple, collisions::DataFrame, bd::Billia
             end
 
             # Special case: first wall moving backwards
-            if prev_obst(current_wall, bd) == 0
+            if isempty(new_col)
                 next_wall = current_wall.id
                 new_collision_point = 0.0
                 travel_dir = true
@@ -88,11 +83,7 @@ function search_next(searchparams::NamedTuple, collisions::DataFrame, bd::Billia
             new_col = selection[findmax(selection.collision_point)[2], :]
         end
 
-        for obst in bd
-            if obst.id == new_col.incoming_id[1]
-                incoming_obst = obst
-            end
-        end
+        incoming_obst = first(filter(e -> e.id == new_col.incoming_id[1], bd.obstacles))
 
         if new_col.moving_foward[1] == searchparams[:moving_foward]
             next_wall = incoming_obst.id
@@ -110,7 +101,9 @@ function search_next(searchparams::NamedTuple, collisions::DataFrame, bd::Billia
     return (wall_hit = next_wall, collision_point = new_collision_point, moving_foward = travel_dir, wall_hit_upside = next_side)
 end
 
-function reduce_boundary!(bd_active::Billiard, collisions::DataFrame, current_searchparams::NamedTuple)
+function reduce_boundary!(bd_active::Billiard, collisions::DataFrame)
+    last_collision = last(collisions)
+    current_searchparams = (wall_hit = last_collision[1], collision_point = last_collision[3], moving_foward = last_collision[4], wall_hit_upside = last_collision[5])
     new_shape_ids = Set()
     bd_new = Obstacle[]
     current_wall = last(bd_active).id
@@ -119,35 +112,28 @@ function reduce_boundary!(bd_active::Billiard, collisions::DataFrame, current_se
     counter = 0
     while true
         push!(new_shape_ids, current_searchparams[:wall_hit])
-        current_searchparams = search_next(current_searchparams, collisions, sides)
+        current_searchparams = search_next(current_searchparams, collisions, bd_active)
         if current_searchparams[:wall_hit] == current_wall || counter > 20
             break
         end
         counter += 1
     end
-    # collisions_new = filter(row -> (row.wall_hit_id ∈ new_shape_ids || row.incoming_id ∈ new_shape_ids || row.incoming_id ∈ (new_shape_ids .+ 1)), collisions)
 
-    for obst in bd_active
-        if parse(Int64, obst.name) in new_shape_ids
-            push!(bd_new, obst)
-        end
-    end
-    return Billiard(bd_new)
+    filter!(e -> e.id ∈ new_shape_ids, bd_active.obstacles)
 end
 
 """
-    init_collisionlist(bd::Billiard) → collisions
-Give a initial collisionlist dataframe for when the SAB has not started yet.
-
-Return collisions dataframe
+    CollisionList gives empty collisionlist dataframe
 """
-function init_collisionlist(bd::Billiard{T}) where {T}
-    collisions = DataFrame(wall_hit_id = Int64[], incoming_id = Int64[], collision_point = T[], moving_foward = Bool[], wall_hit_upside = Bool[], incoming_upside = Bool[])
+CollisionList = DataFrame(wall_hit_id = Integer[], incoming_id = Integer[], collision_point = AbstractFloat[], moving_foward = Bool[], wall_hit_upside = Bool[], incoming_upside = Bool[])
 
-    for obst in bd
-        if obst isa Wall
-            push!(collisions, (0, obst.id, 0., true, true, false))
-        end
-    end
-    return collisions
-end
+# function init_collisionlist(bd::Billiard{T}) where {T}
+#     collisions = DataFrame(wall_hit_id = Int64[], incoming_id = Int64[], collision_point = T[], moving_foward = Bool[], wall_hit_upside = Bool[], incoming_upside = Bool[])
+
+#     for obst in bd
+#         if obst isa Wall
+#             push!(collisions, (0, obst.id, 0., true, true, false))
+#         end
+#     end
+#     return collisions
+# end

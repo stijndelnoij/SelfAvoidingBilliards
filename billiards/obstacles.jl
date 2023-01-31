@@ -1,5 +1,5 @@
 export Obstacle, Disk, Antidot, RandomDisk, Wall, Circular,
-InfiniteWall, PeriodicWall, RandomWall, FiniteWall,
+InfiniteWall, PeriodicWall, RandomWall, FiniteWall, Tail, 
 Semicircle, Ellipse, normalvec
 export translate
 
@@ -219,6 +219,31 @@ FiniteWall(a, b, c, n::Integer, next::Integer) = FiniteWall(a, b, c, false, n, n
 
 isdoor(w) = w.isdoor
 
+struct Tail{T<:AbstractFloat} <: Wall{T}
+    sp::SVector{2,T}
+    ep::SVector{2,T}
+    normal::SVector{2,T}
+    width::T
+    center::SVector{2,T}
+    id::Integer
+    next::Integer
+end
+function Tail(sp::AbstractVector, ep::AbstractVector,
+    n::AbstractVector, id::Integer, next::Integer)
+    T = eltype(sp)
+    n = normalize(n)
+    d = dot(n, ep-sp)
+    if abs(d) > 100eps(T)
+        error("Normal vector is not actually normal to the wall: dot = $d")
+    end
+    T = eltype(sp) <: Integer ? Float64 : eltype(sp)
+    w = norm(ep - sp)
+    center = @. (ep+sp)/2
+    return Tail{T}(SVector{2,T}(sp), SVector{2,T}(ep), SVector{2,T}(n),
+    w, SVector{2,T}(center), id, next)
+end
+
+
 """
     RandomWall{T<:AbstractFloat} <: Wall{T}
 Wall obstacle imposing (uniformly) random reflection during collision (immutable type).
@@ -295,7 +320,7 @@ function default_normal(sp, ep)
     return SV{T}(-y, x)
 end
 
-for WT in (:InfiniteWall, :FiniteWall, :RandomWall)
+for WT in (:InfiniteWall, :FiniteWall, :RandomWall, :Tail)
     @eval $(WT)(sp, ep, id::Integer, next::Integer) = $(WT)(sp, ep, default_normal(sp, ep), id, next)
 end
 
@@ -462,7 +487,7 @@ end
 distance_init(p::AbstractParticle, a::Obstacle) = distance_init(p.pos, a)
 distance_init(pos::SVector, a::Obstacle) = distance(pos, a)
 
-function distance_init(pos::SVector{2,T}, w::FiniteWall{T})::T where {T}
+function distance_init(pos::SVector{2,T}, w::Union{FiniteWall{T}, Tail{T}})::T where {T}
 
     n = normalvec(w, pos)
     posdot = dot(w.sp .- pos, n)
