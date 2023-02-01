@@ -39,7 +39,7 @@ Ray-splitting version of `bounce!`.
         new_wall = Tail(p.pos, cp, normal, new_wall_id, new_wall_id + 1)
         relocate!(p, o, tmin, cp)
         resolvecollision!(p, o)
-        col = add_collision(o, new_wall, vel)
+        col = add_collision(o, new_wall, p.vel)
         push!(collisions, col)
         push!(bd.obstacles, new_wall)
     end

@@ -6,7 +6,7 @@ A Julia package for self avoiding billiard systems in two dimensions.
 It provides a flexible, easy-to-use, and intuitive framework for
 fast implementation of billiards of arbitrary construction.
 
-This code is (almost) a complete copy of the dynamical billiards Julia package, with some adjustments to accomodate self avoidance.
+This code is heavily based on the DynamicalBilliards.jl package, with some adjustments to accomodate self avoidance.
 """
 module SelfAvoidingBilliards
 
