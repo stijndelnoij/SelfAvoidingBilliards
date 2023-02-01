@@ -1,4 +1,4 @@
-![Alt text](media//banner.png?raw=true "Title")
+![Alt text](pdf_122.png?raw=true "Title")
 
 # SelfAvoidingBilliards
 
