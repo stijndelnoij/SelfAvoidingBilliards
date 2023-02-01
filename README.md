@@ -1,5 +1,3 @@
-![Alt text](pdf_122.png?raw=true "Title")
-
 # SelfAvoidingBilliards
 
 A very WIP repository of julia code for self avoiding billiards (SAB).
