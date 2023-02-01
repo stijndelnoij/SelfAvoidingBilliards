@@ -40,7 +40,7 @@ function collision(p::Particle{T}, w::Wall{T}) where {T}
     end
 end
 
-function collision(p::Particle{T}, o::FiniteWall{T}) where {T}
+function collision(p::Particle{T}, o::Union{FiniteWall{T}, Tail{T}}) where {T}
     vdelta = [[o.ep[1]-o.sp[1], o.ep[2]-o.sp[2]] [-p.vel[1], -p.vel[2]]] #Matrix with segment- and velocity vector
     vdeltadet = abs(det(vdelta)) #A meassure for how close the particle and segment are
     if vdeltadet > accuracy(T) #If the segment and particle are to close we have encountered a tunneling event.

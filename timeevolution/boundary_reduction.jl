@@ -83,6 +83,7 @@ function search_next(searchparams::NamedTuple, collisions::DataFrame, bd::Billia
             new_col = selection[findmax(selection.collision_point)[2], :]
         end
 
+        println(new_col.incoming_id[1])
         incoming_obst = first(filter(e -> e.id == new_col.incoming_id[1], bd.obstacles))
 
         if new_col.moving_foward[1] == searchparams[:moving_foward]
@@ -105,12 +106,12 @@ function reduce_boundary!(bd_active::Billiard, collisions::DataFrame)
     last_collision = last(collisions)
     current_searchparams = (wall_hit = last_collision[1], collision_point = last_collision[3], moving_foward = last_collision[4], wall_hit_upside = last_collision[5])
     new_shape_ids = Set()
-    bd_new = Obstacle[]
     current_wall = last(bd_active).id
     push!(new_shape_ids, current_wall)
     
     counter = 0
     while true
+        println(current_searchparams)
         push!(new_shape_ids, current_searchparams[:wall_hit])
         current_searchparams = search_next(current_searchparams, collisions, bd_active)
         if current_searchparams[:wall_hit] == current_wall || counter > 20
@@ -118,7 +119,7 @@ function reduce_boundary!(bd_active::Billiard, collisions::DataFrame)
         end
         counter += 1
     end
-
+    println(new_shape_ids)
     filter!(e -> e.id ∈ new_shape_ids, bd_active.obstacles)
 end
 

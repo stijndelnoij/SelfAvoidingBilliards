@@ -164,10 +164,10 @@ end
 ####################################################
 
 function prev_obst(o::Obstacle{T}, bd::Billiard{T}) where {T}
-    for o2 in bd
-        if o2.next == o.id
-            return o2.next
-        end
+    prev = filter(e -> e.next == o.id, bd.obstacles)
+    if isempty(prev)
+        return 0
+    else
+        return first(prev).id
     end
-    return 0
 end
