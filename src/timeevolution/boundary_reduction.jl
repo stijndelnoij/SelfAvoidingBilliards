@@ -2,10 +2,15 @@ export reduce_boundary!, add_collision, CollisionList
 
 function add_collision(wall_hit::Obstacle{T}, new_wall::Obstacle{T}, vel::SV{T}) where {T}
     ending = new_wall.ep
-    paramet_collision = dot(wall_hit.ep-wall_hit.sp, ending-wall_hit.sp)/(norm(wall_hit.ep-wall_hit.sp))^2
-    moving_foward = dot(vel, wall_hit.ep - wall_hit.sp) > 0
-    wall_hit_upside = dot(vel, wall_hit.normal) > 0
-    incoming_upside = dot(vel, new_wall.normal) < 0
+    if wall_hit isa Wall
+        paramet_collision = dot(wall_hit.ep-wall_hit.sp, ending-wall_hit.sp)/(norm(wall_hit.ep-wall_hit.sp))^2
+        moving_foward = dot(vel, wall_hit.ep - wall_hit.sp) > 0
+    elseif wall_hit isa Ellipse
+        paramet_collision = (atan(ending[2] - wall_hit.c[2], ending[1]- wall_hit.c[1])+π) / (2*π)
+        moving_foward = dot(vel, [-ending[2], ending[1]]) > 0
+    end
+    wall_hit_upside = dot(vel, normalvec(wall_hit, ending)) > 0
+    incoming_upside = dot(vel, normalvec(new_wall, ending)) < 0
 
     return (wall_hit.id, new_wall.id, paramet_collision, moving_foward, wall_hit_upside, incoming_upside)
 end

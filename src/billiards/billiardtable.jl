@@ -60,11 +60,10 @@ function Billiard(bd::Union{AbstractVector, Tuple})
         "since they have to come in pairs."
         ))
     end
-
     if !any(x -> x isa PeriodicWall, bd)
-        return Billiard{T, typeof(tup), Nothing}(tup, nothing)
+        return Billiard{T, Vector{Obstacle{T}}, Nothing}(tup, nothing)
     else
-        return Billiard{T, typeof(tup), Vector{Int}}(tup, peridx)
+        return Billiard{T, Vector{Obstacle{T}}, Vector{Int}}(tup, peridx)
     end
 end
 
