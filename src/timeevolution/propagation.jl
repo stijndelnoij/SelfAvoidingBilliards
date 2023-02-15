@@ -30,7 +30,7 @@ Ray-splitting version of `bounce!`.
         o = bd[i]
         w = cp - p.pos
         normal = [-w[2], w[1]]
-        dotpr = abs(dot(w, o.normal))/(norm(w)*norm(o.normal))
+        dotpr = abs(dot(w, normalvec(o, cp)))/(norm(w))
         dotpr <= 1. ? α = acos(dotpr) : α = 0.0
     end
     if α != 0.0 && abs(tmin) != T(Inf)
