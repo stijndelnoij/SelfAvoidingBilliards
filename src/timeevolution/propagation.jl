@@ -33,7 +33,7 @@ Ray-splitting version of `bounce!`.
         dotpr = abs(dot(w, normalvec(o, cp)))/(norm(w))
         dotpr <= 1. ? α = acos(dotpr) : α = 0.0
     end
-    if α != 0.0 && abs(tmin) != T(Inf)
+    if α > 1e-6 && abs(tmin) != T(Inf)
         new_wall_id = last(bd).id + 1
         new_wall = Tail(p.pos, cp, normal, new_wall_id, new_wall_id + 1)
         relocate!(p, o, tmin, cp)
@@ -41,6 +41,8 @@ Ray-splitting version of `bounce!`.
         col = add_collision(o, new_wall, p.vel)
         push!(collisions, col)
         push!(bd.obstacles, new_wall)
+    else
+        i = 0
     end
     return i, tmin, p.pos, p.vel
 end
