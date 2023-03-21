@@ -113,7 +113,7 @@ function search_next(searchparams::NamedTuple, collisions::DataFrame, bd::Billia
 end
 
 function reduce_boundary!(bd_active::Billiard, collisions::DataFrame)
-    area = Float64
+    area = 0.0
     vertices = Vector{Vector{Float64}}()
     last_collision = last(collisions)
     current_searchparams = (wall_hit = last_collision[1], collision_point = last_collision[3], moving_foward = last_collision[4], wall_hit_upside = last_collision[5])
