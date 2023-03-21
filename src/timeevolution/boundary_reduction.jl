@@ -120,14 +120,17 @@ function reduce_boundary!(bd_active::Billiard, collisions::DataFrame)
     new_shape_ids = Set()
     current_wall = last(bd_active).id
     push!(new_shape_ids, current_wall)
+    obst = filter(e -> e.id == current_searchparams[:wall_hit], bd_active.obstacles)[1]
+    vertex = (obst.ep - obst.sp) * current_searchparams[:collision_point] + obst.sp
+    push!(vertices, vertex)
     
     counter = 0
     while true
         push!(new_shape_ids, current_searchparams[:wall_hit])
-        obst = bd_active[current_searchparams[:wall_hit]]
-        vertex = (obst.ep - obst.sp) * current_searchparams[:collision_point]
-        push!(vertices, vertex)
         current_searchparams = search_next(current_searchparams, collisions, bd_active)
+        obst = filter(e -> e.id == current_searchparams[:wall_hit], bd_active.obstacles)[1]
+        vertex = (obst.ep - obst.sp) * current_searchparams[:collision_point] + obst.sp
+        push!(vertices, vertex)
         if current_searchparams[:wall_hit] == current_wall || counter > 2*length(bd_active) || current_searchparams[:wall_hit] == 0
             break
         end
@@ -135,14 +138,15 @@ function reduce_boundary!(bd_active::Billiard, collisions::DataFrame)
     end
 
     # Determine area of current table with shoelace formula
-    for i in 1:(length(new_shape_ids) - 1)
+    for i in 1:(length(vertices) - 1)
         area += 0.5 * (vertices[i][1] * vertices[i+1][2] - vertices[i][2] * vertices[i+1][1])
     end
+    area += 0.5 * (last(vertices)[1] * vertices[1][2] - last(vertices)[2] * vertices[1][1])
 
     if current_searchparams[:wall_hit] != 0
         filter!(e -> e.id ∈ new_shape_ids, bd_active.obstacles)
     end
-    return area
+    return abs(area)
 end
 
 """
