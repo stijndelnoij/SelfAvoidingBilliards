@@ -125,16 +125,25 @@ function reduce_boundary!(bd_active::Billiard, collisions::DataFrame)
     push!(vertices, vertex)
     
     counter = 0
+
+    prev_searchparams = current_searchparams
     while true
         push!(new_shape_ids, current_searchparams[:wall_hit])
         current_searchparams = search_next(current_searchparams, collisions, bd_active)
-        obst = filter(e -> e.id == current_searchparams[:wall_hit], bd_active.obstacles)[1]
+        
+        # if current wall not in the active table, then there was a problem like perpendicular collision or invalid backpropagation
+        if current_searchparams[:wall_hit] ∈ [o.id for o in bd_active.obstacles]
+            obst = filter(e -> e.id == current_searchparams[:wall_hit], bd_active.obstacles)[1]
+        else
+            return -1.
+        end
         vertex = (obst.ep - obst.sp) * current_searchparams[:collision_point] + obst.sp
         push!(vertices, vertex)
         if current_searchparams[:wall_hit] == current_wall || counter > 2*length(bd_active) || current_searchparams[:wall_hit] == 0
             break
         end
         counter += 1
+        prev_searchparams = current_searchparams
     end
 
     # Determine area of current table with shoelace formula
