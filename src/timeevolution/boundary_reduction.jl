@@ -5,7 +5,7 @@ function add_collision(wall_hit::Obstacle{T}, new_wall::Obstacle{T}, vel::SV{T})
     if wall_hit isa Wall
         paramet_collision = dot(wall_hit.ep-wall_hit.sp, ending-wall_hit.sp)/(norm(wall_hit.ep-wall_hit.sp))^2
         moving_foward = dot(vel, wall_hit.ep - wall_hit.sp) > 0
-    elseif wall_hit isa Ellipse
+    elseif wall_hit isa Ellipse || wall_hit isa Circular
         paramet_collision = (atan(ending[2] - wall_hit.c[2], ending[1]- wall_hit.c[1])+π) / (2*π)
         moving_foward = dot(vel, [-ending[2], ending[1]]) > 0
     end

@@ -84,9 +84,9 @@ function billiard_sinai(r′ = 0.25, x′ = 1.0, y′ = 1.0;
 
     c = [x/2, y/2]
     if setting == "random"
-        centerdisk = RandomDisk(c, r, "Random disk", 5)
+        centerdisk = RandomDisk(c, r, 5)
     else
-        centerdisk = Disk(c, r, "Disk", 5)
+        centerdisk = Disk(c, r, 5)
     end
 
     return Billiard(centerdisk, bdr...)
