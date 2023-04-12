@@ -111,10 +111,10 @@ struct Semicircle{T<:AbstractFloat} <: Circular{T}
     next::Integer
 end
 function Semicircle(
-    c::AbstractVector{T}, r::Real, facedir, id::Integer) where {T<:Real}
+    c::AbstractVector{T}, r::Real, facedir, id::Integer, next::Integer) where {T<:Real}
     S = T <: Integer ? Float64 : T
     return Semicircle{S}(
-    SV(c), convert(S, abs(r)), SV(normalize(facedir)), id, id)
+    SV(c), convert(S, abs(r)), SV(normalize(facedir)), id, next)
 end
 
 show(io::IO, w::Circular{T}) where {T} =
@@ -189,7 +189,8 @@ of escape times.
   since it is internally normalized.
 * `isdoor::Bool` : Flag of whether this `FiniteWall` instance is a "Door".
   Defaults to `false`.
-  * `id::Integer` : Obstacle id.
+* `id::Integer` : Obstacle id.
+* `next::Integer : next Obstacle.`
 """
 struct FiniteWall{T<:AbstractFloat} <: Wall{T}
     sp::SVector{2,T}
@@ -219,6 +220,21 @@ FiniteWall(a, b, c, n::Integer, next::Integer) = FiniteWall(a, b, c, false, n, n
 
 isdoor(w) = w.isdoor
 
+"""
+    Tail{T<:AbstractFloat} <: Wall{T}
+Don't use this to define your own custom billiard tables!
+Physically the same as FiniteWall, but only to be used for placing walls were the particle has been.
+
+### Fields:
+* `sp::SVector{2,T}` : Starting point of the Wall.
+* `ep::SVector{2,T}` : Ending point of the Wall.
+* `normal::SVector{2,T}` : Normal vector to the wall, pointing to where the
+  particle *will come from before a collision* (pointing towards the inside of the
+  billiard). The size of the vector is irrelevant
+  since it is internally normalized.
+* `id::Integer` : Obstacle id.
+* `next::Integer : next Obstacle.`
+"""
 struct Tail{T<:AbstractFloat} <: Wall{T}
     sp::SVector{2,T}
     ep::SVector{2,T}

@@ -132,12 +132,9 @@ Evolve the given particle `p` inside the billiard `bd` exactly like
 The first entries are `0.0` and `0`.
 Similarly with [`evolve!`](@ref) the function does not
 record collisions with periodic walls.
-
-Currently does not support raysplitting. Returns empty arrays
-for pinned particles.
 """
 function visited_obstacles!(
-    p::AbstractParticle{T}, bd::Billiard{T}, t) where {T<:AbstractFloat}
+    p::AbstractParticle{T}, bd::Billiard{T}, t, df::DataFrame) where {T<:AbstractFloat}
 
     if t ≤ 0
         throw(ArgumentError("cannot evolve backwards in time."))
@@ -156,7 +153,7 @@ function visited_obstacles!(
     end
 
     while count < t
-        i, tmin, pos, vel = bounce!(p, bd)
+        i, tmin, pos, vel = bounce!(p, bd, df)
         t_to_write += tmin
         if isperiodic(i, bd)
             continue
