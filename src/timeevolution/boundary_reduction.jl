@@ -1,5 +1,17 @@
 export reduce_boundary!, add_collision, CollisionList
 
+"""
+    add_collision(wall_hit::Obstacle, new_wall::Obstacle, vel) -> new_collision
+Returns a tuple containing a row for the `collisions` dataframe.
+
+The tuple contains:
+* index of the wall which the particle hit
+* index of the newly placed wall
+* parametric position on the wall where the particle has collided (between 0 and 1)
+* boolean wether the particle will move foward with respect to the wall after the collision
+* boolean wether the particle hit the "upside" of the wall
+* boolean wether the upside of the new wall is facing the collision
+"""
 function add_collision(wall_hit::Obstacle{T}, new_wall::Obstacle{T}, vel::SV{T}) where {T}
     ending = new_wall.ep
     if wall_hit isa Wall
@@ -112,6 +124,13 @@ function search_next(searchparams::NamedTuple, collisions::DataFrame, bd::Billia
     return (wall_hit = next_wall, collision_point = new_collision_point, moving_foward = travel_dir, wall_hit_upside = next_side)
 end
 
+"""
+    reduce_boundary!(bd::Billiard, collisions::DataFrame) -> area
+Reduces the current table to the smallest nessecary size by checking which walls are connected to the current particle's position.
+Also returns the area using the shoelace formula.
+
+Note that this function will only work if all the obstacles are (segments of) lines. Please do not use when circular/elliptical obstacles are involved!
+"""
 function reduce_boundary!(bd_active::Billiard, collisions::DataFrame)
     area = 0.0
     vertices = Vector{Vector{Float64}}()
@@ -159,7 +178,8 @@ function reduce_boundary!(bd_active::Billiard, collisions::DataFrame)
 end
 
 """
-    CollisionList gives empty collisionlist dataframe
+    CollisionList()
+    Returns empty collisions dataframe, use this when initializing a SAB run.
 """
 function CollisionList()
     return DataFrame(wall_hit_id = Integer[], incoming_id = Integer[], collision_point = AbstractFloat[], moving_foward = Bool[], wall_hit_upside = Bool[], incoming_upside = Bool[])

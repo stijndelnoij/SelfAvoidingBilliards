@@ -23,42 +23,6 @@ escapetime(p, bd, t; warning = false) =
 escapetime(bd::Billiard, t; kwargs...) =
     escapetime(randominside(bd), bd, t; kwargs...)
 
-function escapetime!(p::AbstractParticle{T}, bd::Billiard{T}, t, raysplitters = nothing;
-        warning::Bool=false)::T where {T<:AbstractFloat}
-
-    ei = escapeind(bd)
-    if length(ei) == 0
-        error("""The billiard does not have any "doors"!""")
-    end
-
-    totalt = zero(T); count = zero(t); t_to_write = zero(T)
-    isray = !isa(raysplitters, Nothing)
-    isray && acceptable_raysplitter(raysplitters, bd)
-    raysidx = raysplit_indices(bd, raysplitters)
-
-    while count < t
-
-        i, tmin, pos, vel = bounce!(p, bd, raysidx, raysplitters)
-        t_to_write += tmin
-
-        if isperiodic(i, bd)
-            continue
-        else
-            totalt += t_to_write
-            i ∈ ei &&  break # the collision happens with a Door!
-
-            # set counter
-            count += increment_counter(t, t_to_write)
-            t_to_write = zero(T)
-        end
-    end#time, or collision number, loop
-    if count ≥ t
-        warning && warn("Particle did not escape within max-iter window.")
-        return T(Inf)
-    end
-    return totalt
-end
-
 function escapeind(bd)
     j = Int[]
     for (i, obst) in enumerate(bd)
@@ -84,7 +48,7 @@ See [`parallelize`](@ref) for a parallelized version.
 meancollisiontime(p, bd, t) = meancollisiontime!(copy(p), bd, t)
 meancollisiontime(bd::Billiard, t) = meancollisiontime(randominside(bd), bd, t)
 
-function meancollisiontime!(p::AbstractParticle{T}, bd::Billiard{T}, t)::T where {T}
+function meancollisiontime!(p::AbstractParticle{T}, bd::Billiard{T}, t, df::DataFrame)::T where {T}
 
     ispinned(p, bd) && return Inf
     tmin, i = next_collision(p, bd)
@@ -93,7 +57,7 @@ function meancollisiontime!(p::AbstractParticle{T}, bd::Billiard{T}, t)::T where
     κ = zero(T); count = zero(t); t_to_write = zero(T); colcount = 0
 
     while count < t
-        i, tmin, pos, vel = bounce!(p, bd)
+        i, tmin, pos, vel = bounce!(p, bd, df)
 
         t_to_write += tmin
 

@@ -7,7 +7,7 @@ export bounce!, ispinned, propagate!
 # Bounce
 #####################################################################################
 """
-    bounce!(p::AbstractParticle, bd::Billiard) → i, t, pos, vel
+    bounce!(p::AbstractParticle, bd::Billiard, df::DataFrame) → i, t, pos, vel
 "Bounce" the particle (advance for one collision) in the billiard.
 Takes care of finite-precision issues.
 
@@ -18,10 +18,6 @@ Return:
   collision has been resolved!). The position is given in the unit cell of
   periodic billiards. Do `pos += p.current_cell` for the position in real space.
 
-```julia
-bounce!(p, bd, raysplit) → i, t, pos, vel
-```
-Ray-splitting version of `bounce!`.
 """
 @inline function bounce!(p::AbstractParticle{T}, bd::Billiard{T}, collisions::DataFrame) where {T}
     i::Int, tmin::T, cp::SV{T} = next_collision(p, bd)

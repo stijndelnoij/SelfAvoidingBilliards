@@ -1,7 +1,7 @@
 using StaticArrays
 
-export billiard_rectangle, billiard_sinai, billiard_polygon, billiard_lorentz,
-billiard_raysplitting_showcase, billiard_hexagonal_sinai, billiard_bunimovich,
+export billiard_rectangle, billiard_sinai, billiard_polygon, billiard_lorentz, 
+billiard_hexagonal_sinai, billiard_bunimovich,
 billiard_stadium, billiard_mushroom, billiard_logo, billiard_vertices,
 polygon_vertices, billiard_deformed_triangle
 

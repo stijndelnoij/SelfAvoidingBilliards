@@ -1,9 +1,7 @@
-# This file must be loaded _after_ raysplitting
-
 export evolve!, evolve, timeseries!, timeseries
 
 """
-    evolve!([p::AbstractParticle,] bd::Billiard, t)
+    evolve!([p::AbstractParticle,] bd::Billiard, t, df::DataFrame)
 Evolve the given particle `p` inside the billiard `bd`. If `t` is of type
 `AbstractFloat`, evolve for as much time as `t`. If however `t` is of type `Int`,
 evolve for as many collisions as `t`.
@@ -24,26 +22,13 @@ from the state `poss[i], vels[i]`. That is why `ct[1]` is always 0 since
 
 Notice that at any point, the velocity vector `vels[i]` is the one obdained *after*
 the specular reflection of the `i-1`th collision.
-
-### Ray-splitting billiards
-    evolve!(p, bd, t, raysplitters)
-
-To implement ray-splitting, the `evolve!` function is supplemented with a
-fourth argument, `raysplitters` which is a tuple of [`RaySplitter`](@ref) instances.
-Notice that `evolve` **always mutates the billiard** if ray-splitting is used!
-For more information and instructions on using ray-splitting
-please visit the official documentation.
 """
-function evolve!(p::AbstractParticle{T}, bd::Billiard{T}, t, raysplitters = nothing;
+function evolve!(p::AbstractParticle{T}, bd::Billiard{T}, t, df::DataFrame;
     warning = false) where {T<:AbstractFloat}
 
     if t ≤ 0
         throw(ArgumentError("`evolve!()` cannot evolve backwards in time."))
     end
-
-    isray = !isa(raysplitters, Nothing)
-    isray && acceptable_raysplitter(raysplitters, bd)
-    raysidx = raysplit_indices(bd, raysplitters)
 
     rt = T[0.0]; rpos = [p.pos]; rvel = [p.vel]
     count = zero(t)
@@ -56,7 +41,7 @@ function evolve!(p::AbstractParticle{T}, bd::Billiard{T}, t, raysplitters = noth
 
     while count < t
 
-        i, tmin, pos, vel = bounce!(p, bd, raysidx, raysplitters)
+        i, tmin, pos, vel = bounce!(p, bd, df)
         flight += tmin
 
         if isperiodic(i, bd)
@@ -111,32 +96,20 @@ the interpolation _always_ stops at collisions.
 For straight propagation `dt = Inf`.
 
 Internally uses [`DynamicalBilliards.extrapolate`](@ref).
-
-### Ray-splitting billiards
-    timeseries!(p, bd, t, raysplitters; ...)
-
-To implement ray-splitting, the `timeseries!` function is supplemented with a
-fourth argument, `raysplitters` which is a tuple of [`RaySplitter`](@ref) instances.
-Notice that `timeseries` **always mutates the billiard** if ray-splitting is used!
-For more information and instructions on using ray-splitting
-please visit the official documentation.
 """
-function timeseries!(p::AbstractParticle{T}, bd::Billiard{T}, f, raysplitters = nothing;
+function timeseries!(p::AbstractParticle{T}, bd::Billiard{T}, f, df::DataFrame;
                      dt = typeof(p) <: Particle ? T(Inf) : T(0.01),
                      warning::Bool = true) where {T}
 
     ts = [zero(T)]
     x  = [p.pos[1]]; y  = [p.pos[2]]
     vx = [p.vel[1]]; vy = [p.vel[2]]
-    isray = !isa(raysplitters, Nothing)
-    isray && acceptable_raysplitter(raysplitters, bd)
-    raysidx = raysplit_indices(bd, raysplitters)
     n, i, t, flight = 0, 0, zero(T), zero(T)
     prevpos = p.pos + p.current_cell
     prevvel = p.vel
 
     @inbounds while check_condition(f, n, t, i, p) # count < t
-        i, ct = bounce!(p, bd, raysidx, raysplitters)
+        i, ct = bounce!(p, bd, df)
         flight += ct
         if isperiodic(i, bd) # do nothing at periodic obstacles
             continue
@@ -178,7 +151,7 @@ Here is how this function is used (for example)
 ```julia
 prevpos, prevvel = p.pos + p.current_cell, p.vel
 for _ in 1:5
-    i, ct, pos, vel = bounce!(p, bd)
+    i, ct, pos, vel = bounce!(p, bd, df)
     x, y, x, vy, t = extrapolate(p, prevpos, prevvel, ct, 0.1)
     # append x, y, ... to other vectors or do whatever with them
     prevpos, prevvel = p.pos + p.current_cell, p.vel
