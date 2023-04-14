@@ -233,7 +233,7 @@ Physically the same as FiniteWall, but only to be used for placing walls were th
   billiard). The size of the vector is irrelevant
   since it is internally normalized.
 * `id::Integer` : Obstacle id.
-* `next::Integer : next Obstacle.`
+* `next::Integer`` : next Obstacle.
 """
 struct Tail{T<:AbstractFloat} <: Wall{T}
     sp::SVector{2,T}

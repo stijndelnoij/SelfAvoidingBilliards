@@ -30,16 +30,6 @@ end
 """
     Billiard(obstacles...)
 Construct a `Billiard` from given `obstacles` (tuple, vector, varargs).
-
-For functions like [`boundarymap`](@ref),
-it is expected (if possible) that the obstacles of the billiard are sorted,
-such that the arc-coordinate `ξ` around the billiard is increasing counter-clockwise.
-
-`ξ` is measured as:
-* the distance from start point to end point in `Wall`s
-* the arc length measured counterclockwise from the open face in `Semicircle`s
-* the arc length measured counterclockwise from the rightmost point
-  in `Circular`s
 """
 function Billiard(bd::Union{AbstractVector, Tuple})
 
@@ -162,6 +152,11 @@ end
 ## Previous obstacle
 ####################################################
 
+"""
+prev_obst(o::Obstacle, bd::Billiard) -> id
+Returns the id of the obstacle for which the next connected obstacle is the input `o`.
+If no obstacle meets this condition it returns `0`
+"""
 function prev_obst(o::Obstacle{T}, bd::Billiard{T}) where {T}
     prev = filter(e -> e.next == o.id, bd.obstacles)
     if isempty(prev)

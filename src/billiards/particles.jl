@@ -1,4 +1,4 @@
-export AbstractParticle, Particle, particlebeam
+export AbstractParticle, Particle
 ####################################################
 ## Particle
 ####################################################
@@ -51,26 +51,3 @@ show(io::IO, p::Particle{T}) where {T} =
 print(io, "Particle{$T}\n",
 "position: $(p.pos+p.current_cell)\nvelocity: $(p.vel)")
 
-####################################################
-## Aux
-####################################################
-"""
-    particlebeam(x0, y0, φ, N, dx, T = eltype(x0)) → ps
-Make `N` particles, all with direction `φ`, starting at `x0, y0`. The particles
-don't all have the same position, but are instead spread by up to `dx` in the
-direction normal to `φ`.
-
-The particle element type is `T`.
-"""
-function particlebeam(x0, y0, φ, N, dx, T = eltype(x0))
-    n = cossin(φ)
-    if N > 1
-        xyφs = [
-        T.((x0 - i*dx*n[2]/N, y0 + i*dx*n[1]/N, φ)) for i in range(-N/2, N/2; length = N)
-        ]
-    elseif N == 1
-        xyφs = [T.((x0, y0, φ))]
-    else
-        error("must be N ≥ 1")
-    end
-end
