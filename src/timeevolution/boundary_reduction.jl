@@ -127,7 +127,7 @@ end
 """
     reduce_boundary!(bd::Billiard, collisions::DataFrame) -> area
 Reduces the current table to the smallest nessecary size by checking which walls are connected to the current particle's position.
-Also returns the area using the shoelace formula.
+Also returns the vertices of the enclosing polygon.
 
 Note that this function will only work if all the obstacles are (segments of) lines. Please do not use when circular/elliptical obstacles are involved!
 """
@@ -165,16 +165,10 @@ function reduce_boundary!(bd_active::Billiard, collisions::DataFrame)
         prev_searchparams = current_searchparams
     end
 
-    # Determine area of current table with shoelace formula
-    for i in 1:(length(vertices) - 1)
-        area += 0.5 * (vertices[i][1] * vertices[i+1][2] - vertices[i][2] * vertices[i+1][1])
-    end
-    area += 0.5 * (last(vertices)[1] * vertices[1][2] - last(vertices)[2] * vertices[1][1])
-
     if current_searchparams[:wall_hit] != 0
         filter!(e -> e.id ∈ new_shape_ids, bd_active.obstacles)
     end
-    return abs(area)
+    return vertices
 end
 
 """
