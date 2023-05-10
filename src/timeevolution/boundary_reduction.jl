@@ -20,6 +20,10 @@ function add_collision(wall_hit::Obstacle{T}, new_wall::Obstacle{T}, vel::SV{T})
     elseif wall_hit isa Ellipse || wall_hit isa Circular
         paramet_collision = (atan(ending[2] - wall_hit.c[2], ending[1]- wall_hit.c[1])+π) / (2*π)
         moving_foward = dot(vel, [-ending[2], ending[1]]) > 0
+    # If not wall/circle, no support for boundary reduction
+    else
+        paramet_collision = 0.
+        moving_foward = true
     end
     wall_hit_upside = dot(vel, normalvec(wall_hit, ending)) > 0
     incoming_upside = dot(vel, normalvec(new_wall, ending)) < 0
