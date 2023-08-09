@@ -1,4 +1,4 @@
-using StaticArrays
+using StaticArrays, Random
 
 export billiard_rectangle, billiard_sinai, billiard_polygon, billiard_lorentz, 
 billiard_hexagonal_sinai, billiard_bunimovich,
@@ -185,8 +185,66 @@ function polygon_vertices(r, sides, center = [0, 0.0], θ = 0)
 end
 
 
+function random_convex_polygon(sides)
+    # Create two sets of random points
+    X = sort(rand(Float64, sides))
+    Y = sort(rand(Float64, sides))
 
+    if sides == 3
+        vertices = [[X[i], Y[i]] for i in 1:sides]
+        return billiard_vertices(vertices)
+    end
+    
+    minX = first(X)
+    maxX = last(X)
+    minY = first(Y)
+    maxY = last(Y)
+    
+    # Split the X and Y array in two different arrays
+    splitX = rand(Bool, sides-2)
+    X1 = X[2:sides-1][splitX]
+    X2 = X[2:sides-1][.!splitX]
+    pushfirst!(X1, minX)
+    pushfirst!(X2, minX)
+    push!(X1, maxX)
+    push!(X2, maxX)
 
+    splitY = rand(Bool, sides-2)
+    Y1 = Y[2:sides-1][splitY]
+    Y2 = Y[2:sides-1][.!splitY]
+
+    pushfirst!(Y1, minY)
+    pushfirst!(Y2, minY)
+    push!(Y1, maxY)
+    push!(Y2, maxY)
+
+    # Calculate the distance between points, X1 moving foward, X2 moving backward
+    Xvec = vcat([X1[i+1] - X1[i] for i in 1:(length(X1)-1)], [X2[i] - X2[i+1] for i in 1:(length(X2)-1)])
+    Yvec = vcat([Y1[i+1] - Y1[i] for i in 1:(length(Y1)-1)], [Y2[i] - Y2[i+1] for i in 1:(length(Y2)-1)])
+
+    # Shuffle Yvec
+    shuffle!(Yvec)
+
+    vec = [[Xvec[i], Yvec[i]] for i in eachindex(Xvec)][sortperm(atan.(Yvec, Xvec))]
+    
+    x = 0.
+    y = 0.
+    minPolygonX = 0.
+    minPolygonY = 0.
+    vertices = [[x,y]]
+
+    for i in 1:sides-1
+        x += vec[i][1]
+        y += vec[i][2]
+        push!(vertices,[x,y])
+        minPolygonX = min(x, minPolygonX)
+        minPolygonY = min(y, minPolygonY)
+    end
+    vertices = [vertices[i] + [minX - minPolygonX, minY - minPolygonY] for i in 1:sides]
+
+    return billiard_vertices(vertices)
+end
+    
 """
     billiard_hexagonal_sinai(r, R, center = [0,0]; setting = "standard")
 Create a sinai-like billiard, which is a hexagon of outer radius `R`, containing
