@@ -3,7 +3,7 @@ using StaticArrays, Random
 export billiard_rectangle, billiard_sinai, billiard_polygon, billiard_lorentz, 
 billiard_hexagonal_sinai, billiard_bunimovich,
 billiard_stadium, billiard_mushroom, billiard_logo, billiard_vertices,
-polygon_vertices, billiard_deformed_triangle, random_convex_polygon
+polygon_vertices, billiard_deformed_triangle, random_convex_polygon, billiard_heart
 
 ####################################################
 ## Famous/Standard Billiards
@@ -242,7 +242,7 @@ function random_convex_polygon(sides)
     end
     vertices = [vertices[i] + [minX - minPolygonX, minY - minPolygonY] for i in 1:sides]
 
-    return billiard_vertices(vertices)
+    return billiard_vertices(vertices, InfiniteWall)
 end
     
 """
