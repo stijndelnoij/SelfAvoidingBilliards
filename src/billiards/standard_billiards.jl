@@ -288,6 +288,17 @@ end
 billiard_stadium = billiard_bunimovich
 
 
+function billiard_heart(o=[0.,0.])
+    lw = InfiniteWall(o,[cos(2*π/3),sin(2*π/3)],[sin(2*π/3), -cos(2*π/3)],1,2)
+    rw = InfiniteWall(o,[cos(π/3),sin(π/3)], [-sin(π/3), cos(π/3)],4,1)
+    r = tan(π/3)/2
+    ol = [r*cos(π/6) + cos(2*π/3), r*sin(π/6) + sin(2*π/3)]
+    lc = Semicircle(ol,r,ol+[cos(-π/3), sin(-π/3)],2,3)
+    or = [r*cos(5*π/6) + cos(π/3), r*sin(5*π/6) + sin(π/3)]
+    rc = Semicircle(or,r,or+[cos(-2*π/3), sin(-2*π/3)],3,4)
+    return Billiard(lw,lc,rc,rw)
+end
+
 """
     billiard_vertices(v, type = FiniteWall)
 Construct a polygon billiard that connects the given vertices `v`
