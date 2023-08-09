@@ -3,7 +3,7 @@ using StaticArrays, Random
 export billiard_rectangle, billiard_sinai, billiard_polygon, billiard_lorentz, 
 billiard_hexagonal_sinai, billiard_bunimovich,
 billiard_stadium, billiard_mushroom, billiard_logo, billiard_vertices,
-polygon_vertices, billiard_deformed_triangle
+polygon_vertices, billiard_deformed_triangle, random_convex_polygon
 
 ####################################################
 ## Famous/Standard Billiards
